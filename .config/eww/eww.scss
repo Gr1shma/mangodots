@@ -1,0 +1,112 @@
+@import "../../.cache/wal/eww-colors.scss";
+
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-size: 11.5px;
+}
+
+window {
+  background-color: transparent;
+  color: $foreground;
+}
+
+.module {
+  background-color: $color0;
+  padding: 0 8px;
+  margin: 1px 1px;
+  border-radius: 0px;
+  color: $foreground;
+}
+
+.right-item {
+  padding: 0 6px;
+}
+
+/* ---- Tags ---- */
+.tags-box {
+  padding: 0;
+  margin: 1px 1px;
+}
+
+.tag {
+  padding: 0 12px;
+  margin: 0;
+  border-radius: 0;
+  color: $color8;
+  background-color: $color0;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.tag:first-child {
+  margin-left: 0;
+}
+
+.tag:last-child {
+  margin-right: 0;
+}
+
+.tag.occupied {
+  color: $foreground;
+}
+
+.tag.focused {
+  background-color: $color0;
+  color: $color6;
+  /* Text color changes to battery highlight color */
+  font-weight: bold;
+}
+
+.tag.urgent {
+  background-color: $color0;
+  color: $color1;
+  font-weight: bold;
+}
+
+/* ---- Layout indicator ---- */
+.layout {
+  color: $color7;
+}
+
+/* ---- Clock fixed width ---- */
+.clock {
+  font-weight: bold;
+  color: $foreground;
+}
+
+/* ---- Right-side modules ---- */
+.pulseaudio {
+  color: $foreground;
+  min-width: 48px;
+}
+
+.backlight {
+  color: $foreground;
+  min-width: 48px;
+}
+
+.cpu {
+  color: $foreground;
+  min-width: 42px;
+}
+
+.memory {
+  color: $foreground;
+  min-width: 42px;
+}
+
+.battery {
+  color: $foreground;
+  min-width: 50px;
+}
+
+.network {
+  color: $foreground;
+  min-width: 75px;
+}
+
+.tray {
+  padding: 0;
+  min-width: 0;
+  color: $foreground;
+}

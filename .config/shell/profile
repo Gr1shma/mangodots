@@ -3,7 +3,7 @@
 export EDITOR="nvim"
 export TERMINAL="foot"
 export TERMINAL_PROG="foot"
-export BROWSER="zen-browser"
+export BROWSER="zen"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
@@ -21,11 +21,11 @@ export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
 
 export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
-alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
 
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="$PATH:$GOPATH/bin"
+export PATH="$HOME/.local/share/cargo/bin:$HOME/.bun/bin:$HOME/.local/bin:$PATH"
 
 export PATH=$PATH:$HOME/.local/bin
 
@@ -34,6 +34,5 @@ export QT_QPA_PLATFORMTHEME=qt6ct
 [ ! -s ~/.config/mpd/pid ] && mpd
 
 if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ] && [ "${XDG_VTNR:-0}" -eq 1 ]; then
-    # exec start-hyprland
     exec start-mango
 fi

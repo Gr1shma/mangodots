@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
+
 export WAYLAND_DISPLAY="${WAYLAND_DISPLAY}"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR}"
-
 BOOKMARKS_FILE="$HOME/dox/bookmarks"
 
 [[ ! -f $BOOKMARKS_FILE ]] && notify-send "Bookmarks" "File not found at $BOOKMARKS_FILE" && exit 1
@@ -22,7 +22,8 @@ process_bookmarks() {
 handle_selection() {
     local item="${1#*| }"
     if [[ $item =~ ^https?:// ]]; then
-        hyprctl dispatch exec "${BROWSER:-zen-browser} $item"
+        setsid -f "${BROWSER:-zen-browser}" --new-tab "$item" >/dev/null 2>&1
+        sleep 0.3
     else
         echo -n "$item" | wl-copy
         notify-send "Bookmarks" "Copied to clipboard"
@@ -39,4 +40,5 @@ case "${1:-}" in
     [[ -n $selection ]] && handle_selection "$selection"
     ;;
 *) notify-send "Bookmarks" "Unknown option: $1" && exit 1 ;;
+
 esac

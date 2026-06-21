@@ -1,0 +1,128 @@
+;; Tags (replaces waybar's ext/workspaces). Streams live from mango via mmsg.
+(deflisten tags_json
+  :initial "{\"tags\":[]}"
+  "~/.config/eww/scripts/tags.sh")
+
+(defpoll cpu_usage   :interval "1s"  "~/.config/eww/scripts/cpu.sh")
+(defpoll mem_usage   :interval "1s"  "~/.config/eww/scripts/mem.sh")
+(defpoll battery_json :interval "10s" :initial "{\"capacity\":0,\"icon\":\"\",\"charging\":false}" "~/.config/eww/scripts/battery.sh")
+(defpoll net_str     :interval "2s"  "~/.config/eww/scripts/network.sh")
+(defpoll vol_str     :interval "0.5s"  "~/.config/eww/scripts/volume.sh")
+(defpoll backlight_str :interval "0.5s" "~/.config/eww/scripts/backlight.sh")
+(defpoll clock_str :interval "0.5s"
+  `TZ="Asia/Kathmandu" date '+%a %d %b  %I:%M %p'`)
+
+(defpoll media_str :interval "1s" :initial "  No Media"
+  `~/.config/eww/scripts/media_info.sh | jq -r '.display_text // "No Media"' 2>/dev/null || echo "No Media"`)
+
+(defvar show_media false)
+
+;; ============== WIDGETS ==============
+
+;; --- Tags / workspaces ---
+(defwidget tag-item [id active urgent clients]
+  (button :class {urgent ? "tag urgent" : (active ? "tag focused" : (clients > 0 ? "tag occupied" : "tag"))}
+          :onclick "mmsg dispatch view,${id}"
+          :onrightclick "mmsg dispatch toggleview,${id}"
+    "${id}"))
+
+(defwidget tags []
+  (box :class "tags-box" :orientation "h" :space-evenly false :spacing 0
+    (for tag in {tags_json.tags}
+      (tag-item :id {tag.id} :active {tag.active} :urgent {tag.urgent} :clients {tag.clients}))))
+
+;; --- Clock — left-click toggles between time and current track title ---
+(defwidget clock []
+  (eventbox
+    :onclick "eww update show_media=${show_media ? false : true}"
+    (box :class "module clock" :halign "center"
+      (label :text {show_media ? media_str : clock_str}
+             :halign "center"
+             :limit-width 60))))
+
+;; --- CPU ---
+(defwidget cpu []
+  (eventbox :onclick "foot -T btop zsh -ic btop"
+    (box :class "right-item cpu"
+      (label :text "  ${cpu_usage}%" :halign "center"))))
+
+;; --- Memory ---
+(defwidget memory []
+  (eventbox :onclick "foot -T btop zsh -ic btop"
+    (box :class "right-item memory"
+      (label :text "  ${mem_usage}%" :halign "center"))))
+
+;; --- Battery ---
+(defwidget battery []
+  (box :class "right-item battery"
+    (label :text "${battery_json.icon}  ${battery_json.capacity}%" :halign "center")))
+
+;; --- Network ---
+(defwidget network []
+    (box :class "right-item network"
+      (label :text net_str :halign "center")))
+
+;; --- Volume / pulseaudio ---
+(defwidget pulseaudio []
+  (eventbox :onscroll "if [ {} = up ]; then pamixer -i 5; else pamixer -d 5; fi"
+            :onclick "foot --app-id floating-term -e pulsemixer"
+    (box :class "right-item pulseaudio"
+      (label :text vol_str :halign "center"))))
+
+;; --- Backlight ---
+(defwidget backlight []
+  (eventbox :onscroll "if [ {} = up ]; then brightnessctl set +5%; else brightnessctl set 5%-; fi"
+    (box :class "right-item backlight"
+      (label :text backlight_str :halign "center"))))
+
+;; --- Tray ---
+;; eww has no native systray. Use a separate tray daemon (see notes below)
+;; and just reserve a slot for it, OR omit and run e.g. `swaync`/`nm-applet`
+;; windows separately. Left as a placeholder box for spacing/visual parity.
+(defwidget tray []
+  (box :class "tray"
+    (systray :orientation "horizontal"
+             :icon-size 16
+             :spacing 5
+             :space-evenly false)))
+
+;; --- Left / center / right groups ---
+(defwidget bar-left []
+  (box :orientation "h" :space-evenly false :halign "start" :spacing 0
+    (tags)))
+
+(defwidget bar-center []
+  (box :orientation "h" :halign "center"
+    (clock)))
+
+(defwidget bar-right []
+  (box :class "module bar-right-box" :orientation "h" :space-evenly false :halign "end" :spacing 0
+    (pulseaudio)
+    (backlight)
+    (cpu)
+    (memory)
+    (battery)
+    (network)
+    (tray)))
+
+;; --- Full bar ---
+(defwidget bar []
+  (centerbox :orientation "h"
+    (bar-left)
+    (bar-center)
+    (bar-right)))
+
+;; ============== WINDOWS ==============
+
+(defwindow bar
+  :monitor 0
+  :windowtype "dock"
+  :geometry (geometry :x "0%"
+                       :y "0%"
+                       :width "100%"
+                       :height "28px"
+                       :anchor "top center")
+  :stacking "fg"
+  :exclusive true
+  :focusable false
+  (bar))

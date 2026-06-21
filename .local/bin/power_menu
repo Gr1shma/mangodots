@@ -4,12 +4,11 @@ op=$(printf ' Poweroff\n Reboot\n Lock\n Logout' |
     fzf --reverse --no-scrollbar --padding 1,3 --prompt 'Power Menu: ' |
     sed 's/^[^ ]* //' |
     tr '[:upper:]' '[:lower:]')
-
 [[ -z "$op" ]] && exit 0
 
 case $op in
-poweroff) systemctl poweroff ;;
-reboot) systemctl reboot ;;
-lock) hyprctl dispatch exec hyprlock ;;
-logout) hyprctl dispatch exit ;;
+poweroff) loginctl poweroff ;;
+reboot) loginctl reboot ;;
+lock) swaylock ;;
+logout) loginctl terminate-session "$XDG_SESSION_ID" ;;
 esac

@@ -1,0 +1,8 @@
+#!/bin/sh
+CACHE="$HOME/.cache/brightness"
+if [ -f "$CACHE" ]; then
+    MAX=$(brightnessctl max)
+    VAL=$(cat "$CACHE")
+    PERCENT=$((VAL * 100 / MAX))
+    brightnessctl set "${PERCENT}%"
+fi

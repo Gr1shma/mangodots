@@ -1,0 +1,55 @@
+#!/usr/bin/env sh
+
+SAVE_DIR="$HOME/pix/ss"
+mkdir -p "$SAVE_DIR"
+
+mode="${1:-region}"
+
+case "$mode" in
+output)
+    wayfreeze \
+        --after-freeze-cmd '
+sleep 0.1
+file="$HOME/pix/screenshots/screenshot_$(date +%Y-%m-%d_%H-%M-%S).png"
+grim "$file"
+wl-copy -t image/png <"$file"
+notify-send "Screenshot" "Saved to $file and copied to clipboard"
+killall wayfreeze
+'
+    ;;
+
+region)
+    wayfreeze \
+        --after-freeze-cmd '
+sleep 0.1
+geo="$(slurp)" || {
+    killall wayfreeze
+    exit 1
+}
+file="$HOME/pix/screenshots/screenshot_$(date +%Y-%m-%d_%H-%M-%S).png"
+grim -g "$geo" "$file"
+wl-copy -t image/png <"$file"
+notify-send "Screenshot" "Saved to $file and copied to clipboard"
+killall wayfreeze
+'
+    ;;
+
+region-clipboard)
+    wayfreeze \
+        --after-freeze-cmd '
+sleep 0.1
+geo="$(slurp)" || {
+    killall wayfreeze
+    exit 1
+}
+grim -g "$geo" - | wl-copy -t image/png
+notify-send "Screenshot" "Copied to clipboard"
+killall wayfreeze
+'
+    ;;
+
+*)
+    notify-send "Screenshot" "Unknown mode: $mode"
+    exit 1
+    ;;
+esac

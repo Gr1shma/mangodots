@@ -1,0 +1,4 @@
+#!/bin/sh
+CACHE="$HOME/.cache/brightness"
+brightnessctl set "$1"
+brightnessctl get > "$CACHE"

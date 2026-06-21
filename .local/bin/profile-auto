@@ -1,0 +1,9 @@
+#!/bin/sh
+# Checks AC power status and sets platform profile accordingly
+AC_ONLINE=$(cat /sys/class/power_supply/AC*/online 2>/dev/null || cat /sys/class/power_supply/ADP*/online 2>/dev/null)
+
+if [ "$AC_ONLINE" = "1" ]; then
+    echo balanced-performance | sudo tee /sys/firmware/acpi/platform_profile
+else
+    echo balanced | sudo tee /sys/firmware/acpi/platform_profile
+fi

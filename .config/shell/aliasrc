@@ -19,8 +19,7 @@ alias \
     y='yazi' \
     e="$EDITOR" \
     v="$EDITOR" \
-    p="paru" \
-    pu="paru -Syu --noconfirm" \
+    pu="sudo xbps-install -Su" \
     sn="search_notes" \
     dots='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
@@ -52,5 +51,4 @@ alias \
 
 # help
 alias \
-    fspace='df -h / | tail -n 1 | awk "{print \$4}"' \
-    pkgdep='pacman -Qi | sed '\''/^Depends On/,/^Required By/{ s/^Required By.*$//; H; d }; /^Name/!d; /^Name/{ n;x;}'\'' | sed '\''/^$/s//==================================================================================/'\'''
+    fspace='df -h / | tail -n 1 | awk "{print \$4}"'

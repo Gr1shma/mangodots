@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Search mpd library by title, queue selection, and play it.
+
+selection=$(mpc -f '%title%	%file%' listall |
+    fzf --reverse --no-scrollbar --padding 1,3 --prompt 'Music: ')
+
+[[ -z "$selection" ]] && exit 0
+
+file="${selection##*$'\t'}"
+
+[[ -z "$file" ]] && exit 0
+
+mpc insert "$file"
+mpc next
+
+mpc status | grep -q '\[paused\]' && mpc play

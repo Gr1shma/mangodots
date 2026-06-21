@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 additional_locations=(
-    ~/.config/hypr/
+    ~/.config/mango/
     ~/.config/nvim/
     ~/.config/foot/
+    ~/.config/eww/
     ~/.local/bin/
 )
 

@@ -10,7 +10,7 @@
 [advice]
     statusHints = false
 [init]
-    defaultBranch = master
+    defaultBranch = main
 [push]
     autoSetupRemote = true
     default = current

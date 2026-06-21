@@ -82,7 +82,7 @@ with_argument = false
 [[modules]]
 description = "install pkgs"
 prefix = "i"
-cmd = "paru -S {}"
+cmd = "sudo xbps-install -Sy {}"
 with_argument = true
 
 [[modules]]

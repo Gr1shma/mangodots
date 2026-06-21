@@ -190,6 +190,12 @@ apply_theme() {
 
     apply_mango_borders
     apply_rmpc_theme
+
+    if command -v eww &>/dev/null; then
+        log "Reloading eww..."
+        eww reload &>/dev/null || log "Warning: eww reload failed"
+    fi
+
     log "Theme colors applied"
 }
 
