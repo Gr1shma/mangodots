@@ -1,0 +1,110 @@
+#!/bin/sh
+# restore-sense — apply saved (or default) Linuwu-Sense state on boot.
+# Run as root by the linuwu-sense-restore runit service.
+
+set -eu
+
+BASE="/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi"
+PREDATOR="$BASE/predator_sense"
+KB="$BASE/four_zoned_kb"
+STATE_DIR="/var/lib/linuwu-sense"
+STATE_FILE="$STATE_DIR/state"
+PROFILE_PATH="/sys/firmware/acpi/platform_profile"
+
+log() {
+	printf '[linuwu-sense-restore] %s\n' "$1"
+}
+
+# --- Wait for the module/sysfs nodes to exist (boot ordering) ---
+i=0
+while [ ! -d "$PREDATOR" ] && [ "$i" -lt 20 ]; do
+	sleep 0.5
+	i=$((i + 1))
+done
+
+if [ ! -d "$PREDATOR" ]; then
+	log "predator_sense not found after waiting, modprobing linuwu_sense"
+	modprobe linuwu_sense 2>/dev/null || true
+	sleep 2
+fi
+
+if [ ! -d "$PREDATOR" ]; then
+	log "ERROR: predator_sense still not present, giving up"
+	exit 1
+fi
+
+mkdir -p "$STATE_DIR"
+
+# --- Detect AC power state (generic: AC*, ADP*, ACAD all checked) ---
+on_ac() {
+	for f in /sys/class/power_supply/A{C,DP}*/online /sys/class/power_supply/ACAD/online; do
+		[ -f "$f" ] || continue
+		[ "$(cat "$f" 2>/dev/null)" = "1" ] && return 0
+	done
+	return 1
+}
+
+# --- Default fallback values ---
+default_kb="ffffff,ffffff,ffffff,ffffff,0"   # all-white, brightness 0
+if on_ac; then
+	default_profile="balanced-performance"
+	log "no saved state / on AC -> default profile: balanced-performance"
+else
+	default_profile="quiet"
+	log "no saved state / on battery -> default profile: quiet"
+fi
+
+apply_kb() {
+	val="$1"
+	if [ -e "$KB/per_zone_mode" ]; then
+		printf '%s' "$val" > "$KB/per_zone_mode" 2>/dev/null \
+			&& log "keyboard per_zone_mode -> $val" \
+			|| log "WARNING: failed writing per_zone_mode"
+	fi
+}
+
+apply_profile() {
+	val="$1"
+	if [ -f "$PROFILE_PATH" ]; then
+		if grep -qw "$val" /sys/firmware/acpi/platform_profile_choices 2>/dev/null; then
+			printf '%s' "$val" > "$PROFILE_PATH" 2>/dev/null \
+				&& log "platform_profile -> $val" \
+				|| log "WARNING: failed writing platform_profile"
+		else
+			log "WARNING: '$val' not in platform_profile_choices, skipping"
+		fi
+	fi
+}
+
+apply_field() {
+	field="$1"
+	val="$2"
+	path="$PREDATOR/$field"
+	if [ -e "$path" ]; then
+		printf '%s' "$val" > "$path" 2>/dev/null \
+			&& log "$field -> $val" \
+			|| log "WARNING: failed writing $field"
+	fi
+}
+
+if [ -f "$STATE_FILE" ]; then
+	log "found saved state at $STATE_FILE, restoring"
+	# shellcheck disable=SC1090
+	. "$STATE_FILE"
+
+	[ -n "${KB_PER_ZONE:-}" ] && apply_kb "$KB_PER_ZONE" || apply_kb "$default_kb"
+	[ -n "${PLATFORM_PROFILE:-}" ] && apply_profile "$PLATFORM_PROFILE" || apply_profile "$default_profile"
+
+	[ -n "${BACKLIGHT_TIMEOUT:-}" ] && apply_field backlight_timeout "$BACKLIGHT_TIMEOUT"
+	[ -n "${BATTERY_LIMITER:-}" ] && apply_field battery_limiter "$BATTERY_LIMITER"
+	[ -n "${BOOT_ANIMATION_SOUND:-}" ] && apply_field boot_animation_sound "$BOOT_ANIMATION_SOUND"
+	[ -n "${FAN_SPEED:-}" ] && apply_field fan_speed "$FAN_SPEED"
+	[ -n "${LCD_OVERRIDE:-}" ] && apply_field lcd_override "$LCD_OVERRIDE"
+	[ -n "${USB_CHARGING:-}" ] && apply_field usb_charging "$USB_CHARGING"
+else
+	log "no saved state found, applying defaults"
+	apply_kb "$default_kb"
+	apply_profile "$default_profile"
+fi
+
+log "restore complete"

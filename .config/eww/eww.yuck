@@ -44,18 +44,18 @@
 (defwidget cpu []
   (eventbox :onclick "foot -T btop zsh -ic btop"
     (box :class "right-item cpu"
-      (label :text "  ${cpu_usage}%" :halign "center"))))
+      (label :text " ${cpu_usage}%" :halign "center"))))
 
 ;; --- Memory ---
 (defwidget memory []
   (eventbox :onclick "foot -T btop zsh -ic btop"
     (box :class "right-item memory"
-      (label :text "  ${mem_usage}%" :halign "center"))))
+      (label :text " ${mem_usage}%" :halign "center"))))
 
 ;; --- Battery ---
 (defwidget battery []
   (box :class "right-item battery"
-    (label :text "${battery_json.icon}  ${battery_json.capacity}%" :halign "center")))
+    (label :text "${battery_json.icon} ${battery_json.capacity}%" :halign "center")))
 
 ;; --- Network ---
 (defwidget network []

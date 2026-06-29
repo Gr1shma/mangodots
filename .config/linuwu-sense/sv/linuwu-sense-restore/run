@@ -1,0 +1,11 @@
+#!/bin/sh
+# linuwu-sense-restore: runit service.
+# Runs restore-sense once, then idles forever so runit doesn't treat
+# this as a crashing/respawning service (it's a one-shot-at-boot task).
+exec 2>&1
+
+/usr/local/bin/restore-sense
+
+# Stay "up" quietly — sv knows the service is running, but there's
+# nothing left to do until next boot.
+exec sleep infinity

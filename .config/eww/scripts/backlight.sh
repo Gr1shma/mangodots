@@ -3,7 +3,7 @@ DEVICE="${1:-$(ls /sys/class/backlight 2>/dev/null | head -n 1)}"
 BASE="/sys/class/backlight/$DEVICE"
 
 if [ -z "$DEVICE" ] || [ ! -d "$BASE" ]; then
-    echo "󰃞  0%"
+    echo "󰃞 0%"
     exit 0
 fi
 
@@ -19,4 +19,4 @@ else
     icon="󰃞"
 fi
 
-echo "$icon  ${pct}%"
+echo "$icon ${pct}%"
